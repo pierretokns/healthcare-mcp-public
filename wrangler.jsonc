@@ -1,0 +1,21 @@
+{
+  "name": "healthcare-mcp-server",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-11-12",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "CACHE_TTL": "86400"
+  },
+  "env": {
+    "production": {
+      "route": "https://healthcare-mcp.pierretokns.workers.dev/*"
+    //   "zone_id": "your-zone-id"
+    }
+  }
+  // Optional: Uncomment to enable KV-based caching
+  // [[kv_namespaces]]
+  // binding = "CACHE"
+  // id = "your-kv-namespace-id"
+}

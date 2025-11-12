@@ -11,7 +11,10 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node --test",
-    "server:http": "node server/http-server.js"
+    "server:http": "node server/http-server.js",
+    "deploy": "wrangler deploy",
+    "dev:workers": "wrangler dev",
+    "setup:workers": "npm install"
   },
   "keywords": [
     "healthcare",
@@ -30,6 +33,11 @@
     "node-fetch": "^3.3.2",
     "node-cache": "^5.1.2",
     "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.0.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

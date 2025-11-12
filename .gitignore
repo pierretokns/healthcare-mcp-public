@@ -53,3 +53,8 @@ Thumbs.db
 /src/private/
 payments_config.json
 stripe_keys.json
+.claude-flow/metrics/agent-metrics.json
+.claude-flow/metrics/performance.json
+.claude-flow/metrics/task-metrics.json
+analysis-reports/token-usage-1762967853853.csv
+analysis-reports/token-usage-1762967864863.csv

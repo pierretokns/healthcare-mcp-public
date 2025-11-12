@@ -16,7 +16,7 @@ export default {
     const handler = new HealthcareMCP(env);
     return handler.fetch(request);
   },
-  async scheduled(event: any, env: Env): Promise<void> {
+  async scheduled(_event: any, _env: Env): Promise<void> {
     // Optional: Handle scheduled events
   }
 };
@@ -33,9 +33,26 @@ class HealthcareMCP {
    * @param search_type - Type: 'general', 'label', or 'adverse_events'
    */
   async fda_drug_lookup(drug_name: string, search_type: string = 'general') {
-    const baseUrl = 'https://api.fda.gov/drug/event.json';
+    let baseUrl: string;
+    let searchQuery: string;
+
+    // Determine endpoint and search query based on search type
+    switch (search_type) {
+      case 'label':
+        baseUrl = 'https://api.fda.gov/drug/label.json';
+        searchQuery = `openfda.generic_name:"${drug_name}"`;
+        break;
+      case 'adverse_events':
+        baseUrl = 'https://api.fda.gov/drug/event.json';
+        searchQuery = `patient.drug.generic_name:"${drug_name}"`;
+        break;
+      default: // general
+        baseUrl = 'https://api.fda.gov/drug/label.json';
+        searchQuery = `openfda.generic_name:"${drug_name}"`;
+    }
+
     const params = new URLSearchParams({
-      search: `patient.drug.generic_name:"${drug_name}"`,
+      search: searchQuery,
       limit: '10'
     });
 
@@ -47,7 +64,7 @@ class HealthcareMCP {
       if (!response.ok) {
         return {
           status: 'error',
-          error_message: `FDA API returned ${response.status}`
+          error_message: `FDA API returned ${response.status}: ${response.statusText}`
         };
       }
 
@@ -78,7 +95,7 @@ class HealthcareMCP {
       db: 'pubmed',
       term: query,
       retmax: Math.min(max_results, 20).toString(),
-      rettype: 'json'
+      retmode: 'json'
     });
 
     try {
@@ -89,7 +106,7 @@ class HealthcareMCP {
       if (!response.ok) {
         return {
           status: 'error',
-          error_message: `PubMed API returned ${response.status}`
+          error_message: `PubMed API returned ${response.status}: ${response.statusText}`
         };
       }
 
@@ -118,11 +135,12 @@ class HealthcareMCP {
     status: string = 'recruiting'
   ) {
     const baseUrl = 'https://clinicaltrials.gov/api/v2/studies';
+    // Use simple query format for API v2
     const params = new URLSearchParams({
       query: condition,
       filter: `status:${status}`,
       pageSize: '10',
-      sortType: 'LastUpdatePostDate'
+      sort: 'lastUpdatePostDate:desc'
     });
 
     try {
@@ -133,7 +151,7 @@ class HealthcareMCP {
       if (!response.ok) {
         return {
           status: 'error',
-          error_message: `ClinicalTrials.gov API returned ${response.status}`
+          error_message: `ClinicalTrials.gov API returned ${response.status}: ${response.statusText}`
         };
       }
 
@@ -146,7 +164,8 @@ class HealthcareMCP {
         studies: (data.studies || []).slice(0, 5).map((study: any) => ({
           nct_id: study.protocolSection?.identificationModule?.nctId,
           title: study.protocolSection?.identificationModule?.officialTitle,
-          status: study.protocolSection?.statusModule?.overallStatus
+          status: study.protocolSection?.statusModule?.overallStatus,
+          phase: study.protocolSection?.designModule?.phases?.[0] || 'Not specified'
         }))
       };
     } catch (error) {
@@ -253,36 +272,52 @@ class HealthcareMCP {
    * @param sort_by - Sort field (default: 'rel')
    */
   async medrxiv_search(query: string, sort_by: string = 'rel') {
-    const baseUrl = 'https://www.medrxiv.org/api/v1/articles';
-    const params = new URLSearchParams({
-      search: query,
-      sort: sort_by,
-      format: 'json',
-      limit: '10'
-    });
+    // Use the biorxiv API for medrxiv content
+    const baseUrl = 'https://api.biorxiv.org/details/medrxiv';
+    const today = new Date();
+    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Format dates for API
+    const formatDate = (date: Date) => {
+      return date.toISOString().split('T')[0].replace(/-/g, '');
+    };
+
+    const fromDate = formatDate(lastWeek);
+    const toDate = formatDate(today);
 
     try {
-      const response = await fetch(`${baseUrl}?${params}`, {
+      const response = await fetch(`${baseUrl}/${fromDate}/${toDate}`, {
         headers: { 'User-Agent': 'healthcare-mcp/1.0' }
       });
 
       if (!response.ok) {
         return {
           status: 'error',
-          error_message: `MedRxiv API returned ${response.status}`
+          error_message: `MedRxiv API returned ${response.status}: ${response.statusText}`
         };
       }
 
       const data = await response.json() as any;
+
+      // Filter articles by query if provided
+      let articles = data.collection || [];
+      if (query && query !== '') {
+        articles = articles.filter((article: any) =>
+          article.title.toLowerCase().includes(query.toLowerCase()) ||
+          (article.abstract && article.abstract.toLowerCase().includes(query.toLowerCase()))
+        );
+      }
+
       return {
         status: 'success',
         query,
-        total_results: data.total_results || 0,
-        preprints: (data.collection || []).slice(0, 5).map((article: any) => ({
+        total_results: articles.length,
+        preprints: articles.slice(0, 5).map((article: any) => ({
           title: article.title,
           authors: article.authors,
           date: article.date,
-          abstract: article.abstract?.substring(0, 200)
+          abstract: article.abstract?.substring(0, 200) || 'No abstract available',
+          doi: article.doi
         }))
       };
     } catch (error) {
@@ -303,7 +338,7 @@ class HealthcareMCP {
       db: 'books',
       term: query,
       retmax: '10',
-      rettype: 'json'
+      retmode: 'json'
     });
 
     try {
@@ -314,7 +349,7 @@ class HealthcareMCP {
       if (!response.ok) {
         return {
           status: 'error',
-          error_message: `NCBI Bookshelf API returned ${response.status}`
+          error_message: `NCBI Bookshelf API returned ${response.status}: ${response.statusText}`
         };
       }
 

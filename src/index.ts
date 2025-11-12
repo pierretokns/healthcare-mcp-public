@@ -135,10 +135,9 @@ class HealthcareMCP {
     status: string = 'recruiting'
   ) {
     const baseUrl = 'https://clinicaltrials.gov/api/v2/studies';
-    // Use simple query format for API v2
+    // Simplified query for API v2
     const params = new URLSearchParams({
       query: condition,
-      filter: `status:${status}`,
       pageSize: '10',
       sort: 'lastUpdatePostDate:desc'
     });
@@ -156,12 +155,22 @@ class HealthcareMCP {
       }
 
       const data = await response.json() as any;
+
+      // Filter by status after receiving results
+      let studies = data.studies || [];
+      if (status && status !== 'all') {
+        studies = studies.filter((study: any) => {
+          const overallStatus = study.protocolSection?.statusModule?.overallStatus?.toLowerCase();
+          return overallStatus === status.toLowerCase();
+        });
+      }
+
       return {
         status: 'success',
         condition,
         trial_status: status,
-        total_studies: data.totalCount || 0,
-        studies: (data.studies || []).slice(0, 5).map((study: any) => ({
+        total_studies: studies.length,
+        studies: studies.slice(0, 5).map((study: any) => ({
           nct_id: study.protocolSection?.identificationModule?.nctId,
           title: study.protocolSection?.identificationModule?.officialTitle,
           status: study.protocolSection?.statusModule?.overallStatus,
@@ -271,7 +280,7 @@ class HealthcareMCP {
    * @param query - Search query
    * @param sort_by - Sort field (default: 'rel')
    */
-  async medrxiv_search(query: string, sort_by: string = 'rel') {
+  async medrxiv_search(query: string, _sort_by: string = 'rel') {
     // Use the biorxiv API for medrxiv content
     const baseUrl = 'https://api.biorxiv.org/details/medrxiv';
     const today = new Date();

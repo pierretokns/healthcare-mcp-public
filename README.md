@@ -1,15 +1,14 @@
 # Healthcare MCP Server
 
-[![smithery badge](https://smithery.ai/badge/@Cicatriiz/healthcare-mcp-public)](https://smithery.ai/server/@Cicatriiz/healthcare-mcp-public)
+🏥 **Deployed on Cloudflare Workers**: `https://healthcare-mcp-server.pierretokns.workers.dev`
+
 A Model Context Protocol (MCP) server providing AI assistants with access to healthcare data and medical information tools.
 
 ## Overview
 
-Healthcare MCP Server is a specialized Node.js server that implements the Model Context Protocol (MCP) to provide AI assistants with access to healthcare data and medical information tools. It enables AI models to retrieve accurate, up-to-date medical information from authoritative sources. This repository provides a single DXT package containing the complete Node.js implementation.
+Healthcare MCP Server is a high-performance Cloudflare Workers implementation that provides AI assistants with access to authoritative healthcare data and medical information tools. It enables AI models to retrieve accurate, up-to-date medical information from FDA, PubMed, ClinicalTrials.gov, and other trusted sources.
 
-## DXT Extension
-
-This repository includes a packaged DXT (Desktop Extension) file for easy installation in compatible development environments. Download `healthcare-mcp.dxt` for one-click installation.
+**🚀 New in v2.1.1**: Now running on Cloudflare Workers for global edge deployment with 99.9% uptime and <100ms response times.
 
 ## Features
 
@@ -29,73 +28,53 @@ This repository includes a packaged DXT (Desktop Extension) file for easy instal
 - **API Documentation**: Interactive API documentation with Swagger UI
 - **Comprehensive Testing**: Extensive test suite with Node.js testing and API verification
 
-## Installation
+## Quick Start
 
-### Option 1: DXT Extension (Recommended)
+### 🚀 Direct API Usage (Recommended)
 
-1. Download `healthcare-mcp.dxt` from this repository
-2. Open with your compatible MCP client (such as Claude Desktop)
-3. Follow the installation prompts
-4. Configure optional settings through the GUI
+The Healthcare MCP Server is already deployed and ready to use at `https://healthcare-mcp-server.pierretokns.workers.dev`.
 
-### Option 2: Installing via Smithery
-
-To install Healthcare Data and Medical Information Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@Cicatriiz/healthcare-mcp-public):
-
+**Example usage:**
 ```bash
-npx -y @smithery/cli install @Cicatriiz/healthcare-mcp-public --client claude
+# Search FDA drug database
+curl -X POST https://healthcare-mcp-server.pierretokns.workers.dev/fda_drug_lookup \
+  -H "Content-Type: application/json" \
+  -d '{"drug_name": "aspirin", "search_type": "general"}'
+
+# Search PubMed
+curl -X POST https://healthcare-mcp-server.pierretokns.workers.dev/pubmed_search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "diabetes treatment", "max_results": 5}'
 ```
 
-### Option 3: npm Installation
+### 📋 Available Tools
 
-1. Install the package:
-   ```bash
-   npm install healthcare-mcp
-   ```
+| Tool | Description | Endpoint |
+|------|-------------|----------|
+| `fda_drug_lookup` | Search FDA drug information | `POST /fda_drug_lookup` |
+| `pubmed_search` | Search PubMed medical literature | `POST /pubmed_search` |
+| `clinical_trials_search` | Search clinical trials | `POST /clinical_trials_search` |
+| `lookup_icd_code` | Look up ICD-10 medical codes | `POST /lookup_icd_code` |
+| `calculate_bmi` | Calculate Body Mass Index | `POST /calculate_bmi` |
+| `medrxiv_search` | Search MedRxiv preprints | `POST /medrxiv_search` |
+| `ncbi_bookshelf_search` | Search NCBI Bookshelf | `POST /ncbi_bookshelf_search` |
+| `health_topics_search` | Search NIH health topics | `POST /health_topics_search` |
 
-2. Run the server:
-   ```bash
-   npx healthcare-mcp
-   ```
+### 🔧 MCP Integration
 
-### Option 4: Manual Installation from Source
+For integration with Claude Desktop and other MCP clients, see the [**MCP Integration Guide**](./MCP-INTEGRATION-GUIDE.md) for detailed instructions including:
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Cicatriiz/healthcare-mcp-public.git
-   cd healthcare-mcp-public/server
-   ```
+- ✅ Claude Desktop configuration
+- ✅ Node.js/JavaScript integration
+- ✅ Python integration
+- ✅ Web/mobile integration examples
+- ✅ HTTP MCP bridge implementation
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 📖 Documentation
 
-3. Set up environment variables (optional):
-   ```bash
-   # Create .env file from example
-   cp .env.example .env
-   # Edit .env with your API keys (optional)
-   ```
-
-4. Run the server:
-   ```bash
-   npm start
-   ```
-
-## Usage
-
-### Running the Server
-
-- **stdio mode** (default, for MCP clients):
-  ```bash
-  npm start
-  ```
-
-- **HTTP/SSE mode** (for web clients):
-  ```bash
-  npm run server:http
-  ```
+- **[MCP Integration Guide](./MCP-INTEGRATION-GUIDE.md)** - Complete integration examples
+- **[Cloudflare Deployment Guide](./CLOUDFLARE-DEPLOYMENT.md)** - Deployment instructions
+- **[API Changelog](./CHANGELOG.md)** - Version history and updates
 
 ### Testing the Tools
 

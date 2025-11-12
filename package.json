@@ -1,20 +1,16 @@
 {
   "name": "healthcare-mcp",
   "version": "2.1.1",
-  "description": "Healthcare MCP Server for medical information access",
+  "description": "Healthcare MCP Server for medical information access - Cloudflare Workers",
   "type": "module",
-  "main": "server/index.js",
+  "main": "src/index.ts",
   "bin": {
-    "healthcare-mcp": "server/index.js"
+    "healthcare-mcp-bridge": "http-mcp-bridge.js"
   },
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node --watch server/index.js",
-    "test": "node --test",
-    "server:http": "node server/http-server.js",
     "deploy": "wrangler deploy",
     "dev:workers": "wrangler dev",
-    "setup:workers": "npm install"
+    "test:api": "node test/api-test.js"
   },
   "keywords": [
     "healthcare",
@@ -24,15 +20,13 @@
     "pubmed",
     "clinical-trials",
     "icd-10",
-    "mcp-server"
+    "mcp-server",
+    "cloudflare-workers"
   ],
   "author": "Cicatriiz",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "node-fetch": "^3.3.2",
-    "node-cache": "^5.1.2",
-    "sqlite3": "^5.1.6"
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "wrangler": "^3.0.0",
@@ -41,5 +35,13 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cicatriiz/healthcare-mcp-public.git"
+  },
+  "homepage": "https://healthcare-mcp-server.pierretokns.workers.dev",
+  "bugs": {
+    "url": "https://github.com/Cicatriiz/healthcare-mcp-public/issues"
   }
 }
